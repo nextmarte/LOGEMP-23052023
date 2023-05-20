@@ -1,0 +1,7 @@
+---
+title: "Sobre"
+author: "Ariel Levy e Marcus Ramalho"
+---
+
+Exemplo criado para o workshop do MBA em Logística Empresarial e Gestão da Cadeia de Suprimentos – UFF
+

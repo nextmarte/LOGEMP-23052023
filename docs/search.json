@@ -1,0 +1,51 @@
+[
+  {
+    "objectID": "LOGEMP-20-05-2023.html",
+    "href": "LOGEMP-20-05-2023.html",
+    "title": "LOGEMP-20-05-2023",
+    "section": "",
+    "text": "library(tidyverse)\nlibrary(timetk)\nlibrary(lubridate)\nlibrary(plotly)\nlibrary(ggQC)\nlibrary(qcc)\n\nLer o arquivo de dados não tem dificuldade mas atente aos detalhes ao definir o caminho. Neste exemplo jádefinimos os tipos de dados a serem forçados na leitura. Isto poderia ser realizado também depois.\n\ndados &lt;- readxl::read_excel(\"Exercico-_Caso_entega.xlsx\",col_types = c(\"date\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\"))"
+  },
+  {
+    "objectID": "LOGEMP-20-05-2023.html#carregando-pacotes",
+    "href": "LOGEMP-20-05-2023.html#carregando-pacotes",
+    "title": "LOGEMP-20-05-2023",
+    "section": "",
+    "text": "library(tidyverse)\nlibrary(timetk)\nlibrary(lubridate)\nlibrary(plotly)\nlibrary(ggQC)\nlibrary(qcc)\n\nLer o arquivo de dados não tem dificuldade mas atente aos detalhes ao definir o caminho. Neste exemplo jádefinimos os tipos de dados a serem forçados na leitura. Isto poderia ser realizado também depois.\n\ndados &lt;- readxl::read_excel(\"Exercico-_Caso_entega.xlsx\",col_types = c(\"date\",\"numeric\",\"numeric\",\"numeric\",\"numeric\",\"numeric\"))"
+  },
+  {
+    "objectID": "LOGEMP-20-05-2023.html#variáveis-de-controle",
+    "href": "LOGEMP-20-05-2023.html#variáveis-de-controle",
+    "title": "LOGEMP-20-05-2023",
+    "section": "Variáveis de controle",
+    "text": "Variáveis de controle\nAssim como fizemos na aula de Qualidade em lógistica precisaremos calcular as vaiáveis de controle\n\n(dados &lt;- dados %&gt;% #calculo de x-bar\n  mutate(xbar=rowMeans(dados[2:6])) %&gt;% \n  mutate(r=apply(dados[,2:6],1,#Amplitude\n                 function(x) max(x)-min(x))) %&gt;% \n  mutate(LCC=mean(xbar)) %&gt;% \n  mutate(LCS=LCC+(mean(r)*0.72)) %&gt;% \n  mutate(LCI=mean(xbar)-(mean(r)*0.72)) %&gt;%\n  mutate(LCCR=mean(r)) %&gt;%\n  mutate(LCSR=LCCR*2.282)%&gt;%\n  mutate(LCIR=LCCR*0))\n\n# A tibble: 11 × 14\n   Data                   x1    x2    x3    x4    x5  xbar     r   LCC   LCS\n   &lt;dttm&gt;              &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;\n 1 2018-01-10 00:00:00  3    14.1  12.2   3.24  6.98  7.92 11.1   11.4  18.5\n 2 2018-01-11 00:00:00  5.35  6.59 14.0   4.75 13.2   8.77  9.21  11.4  18.5\n 3 2018-01-12 00:00:00 13.3  14.1  11.4  11.4  10.3  12.1   3.76  11.4  18.5\n 4 2018-01-13 00:00:00  9.73 12.1  11.7  14.6   3.79 10.4  10.8   11.4  18.5\n 5 2018-01-14 00:00:00  7.46  8.26 15.5  14.8  11.1  11.4   8.03  11.4  18.5\n 6 2018-01-15 00:00:00 25.8  13.0  17.2   2.15 12.9  14.2  23.6   11.4  18.5\n 7 2018-01-16 00:00:00  9.56 11.6   9.14 15.1  12.1  11.5   5.94  11.4  18.5\n 8 2018-01-17 00:00:00  7.98 11.5  13.9  13.2  13.8  12.1   5.95  11.4  18.5\n 9 2018-01-18 00:00:00 12.7   5.30  6.27 15.4  11.5  10.2  10.1   11.4  18.5\n10 2018-01-19 00:00:00 16.0   6.44 14.7  13.1  15.8  13.2   9.52  11.4  18.5\n11 2018-01-20 00:00:00 14.7  13.3  19.0   8.29 12.1  13.5  10.7   11.4  18.5\n# ℹ 4 more variables: LCI &lt;dbl&gt;, LCCR &lt;dbl&gt;, LCSR &lt;dbl&gt;, LCIR &lt;dbl&gt;"
+  },
+  {
+    "objectID": "LOGEMP-20-05-2023.html#plotando-o-gráfico-de-controle",
+    "href": "LOGEMP-20-05-2023.html#plotando-o-gráfico-de-controle",
+    "title": "LOGEMP-20-05-2023",
+    "section": "Plotando o gráfico de controle",
+    "text": "Plotando o gráfico de controle\n\n(control&lt;-ggplot(dados, aes(Data))+\n   geom_point(aes(y=xbar),colour= \"blue\")+\n   geom_hline(yintercept=dados$LCC, linetype=\"dashed\", color = \"red\")+\n   geom_hline(yintercept=dados$LCS, linetype=\"dashed\", color = \"green\")+\n   geom_hline(yintercept=dados$LCI, linetype=\"dashed\", color = \"purple\")+\n   labs(title = \"Grafico de controle com ggplot e plotly\",y=\"Contagem\"))\n\n\n\n\n\n   (gcontrol&lt;-ggplot(dados, aes(Data)) +\n   geom_line(aes(y=xbar,fill=\"xbar\"),colour=\"blue\") +\n   geom_line(aes(y=LCC,fill=\"LCC\"),colour=\"red\")+\n   geom_line(aes(y=LCS,fill=\"LCS\"),colour=\"green\")+\n   geom_line(aes(y=LCI,fill=\"LCI\"),colour=\"purple\")+\n   geom_point(aes(y=xbar))+\n   labs(title = \"Grafico de controle com ggplot e plotly\",y=\"Contagem\"))\n\nWarning in geom_line(aes(y = xbar, fill = \"xbar\"), colour = \"blue\"): Ignoring\nunknown aesthetics: fill\n\n\nWarning in geom_line(aes(y = LCC, fill = \"LCC\"), colour = \"red\"): Ignoring\nunknown aesthetics: fill\n\n\nWarning in geom_line(aes(y = LCS, fill = \"LCS\"), colour = \"green\"): Ignoring\nunknown aesthetics: fill\n\n\nWarning in geom_line(aes(y = LCI, fill = \"LCI\"), colour = \"purple\"): Ignoring\nunknown aesthetics: fill"
+  },
+  {
+    "objectID": "LOGEMP-20-05-2023.html#usando-plotly-para-criar-um-grafico-interativo",
+    "href": "LOGEMP-20-05-2023.html#usando-plotly-para-criar-um-grafico-interativo",
+    "title": "LOGEMP-20-05-2023",
+    "section": "Usando plotly para criar um grafico interativo",
+    "text": "Usando plotly para criar um grafico interativo\nOutro pacote o plotly usa a mesma base do ggplot2 mas permite que os gráficos quando em HTML sejaminterativos.\n\nggplotly(control)"
+  },
+  {
+    "objectID": "LOGEMP-20-05-2023.html#grafico-de-controle-usando-o-pacote-qcc-por-último-faremos-esse-exercício-usando-outro-pacote-cuja-vntagem-énão-precisar-de-nada-além-dos-dados-contudo-acho-o-gráfico-mais-pobre.",
+    "href": "LOGEMP-20-05-2023.html#grafico-de-controle-usando-o-pacote-qcc-por-último-faremos-esse-exercício-usando-outro-pacote-cuja-vntagem-énão-precisar-de-nada-além-dos-dados-contudo-acho-o-gráfico-mais-pobre.",
+    "title": "LOGEMP-20-05-2023",
+    "section": "Grafico de controle usando o pacote qcc Por último faremos esse exercício usando outro pacote, cuja vntagem énão precisar de nada além dos dados, contudo acho o gráfico mais pobre.",
+    "text": "Grafico de controle usando o pacote qcc Por último faremos esse exercício usando outro pacote, cuja vntagem énão precisar de nada além dos dados, contudo acho o gráfico mais pobre.\n\nqcc(dados[2:6],type = \"xbar\")\n\n\n\n\nList of 11\n $ call      : language qcc(data = dados[2:6], type = \"xbar\")\n $ type      : chr \"xbar\"\n $ data.name : chr \"dados[2:6]\"\n $ data      : num [1:11, 1:5] 3 5.35 13.29 9.73 7.46 ...\n  ..- attr(*, \"dimnames\")=List of 2\n $ statistics: Named num [1:11] 7.92 8.77 12.11 10.38 11.42 ...\n  ..- attr(*, \"names\")= chr [1:11] \"1\" \"2\" \"3\" \"4\" ...\n $ sizes     : int [1:11] 5 5 5 5 5 5 5 5 5 5 ...\n $ center    : num 11.4\n $ std.dev   : num 4.25\n $ nsigmas   : num 3\n $ limits    : num [1, 1:2] 5.69 17.1\n  ..- attr(*, \"dimnames\")=List of 2\n $ violations:List of 2\n - attr(*, \"class\")= chr \"qcc\""
+  },
+  {
+    "objectID": "Sobre.html",
+    "href": "Sobre.html",
+    "title": "Sobre",
+    "section": "",
+    "text": "Exemplo criado para o workshop do MBA em Logística Empresarial e Gestão da Cadeia de Suprimentos – UFF"
+  }
+]

@@ -1,0 +1,122 @@
+---
+title: "LOGEMP-20-05-2023"
+author: "Marcus Ramalho"
+---
+
+## Carregando pacotes
+
+```{r}
+#| label: pacotes
+#| echo: true
+#| include: true
+#| message: false 
+
+library(tidyverse)
+library(timetk)
+library(lubridate)
+library(plotly)
+library(ggQC)
+library(qcc)
+```
+
+Ler o arquivo de dados não tem dificuldade mas atente aos detalhes ao definir o caminho. Neste exemplo jádefinimos os tipos de dados a serem forçados na leitura. Isto poderia ser realizado também depois.
+
+```{r}
+#| echo: true
+#| include: true
+#| message: false 
+
+dados <- readxl::read_excel("Exercico-_Caso_entega.xlsx",col_types = c("date","numeric","numeric","numeric","numeric","numeric"))
+```
+
+## Variáveis de controle
+
+Assim como fizemos na aula de Qualidade em lógistica precisaremos calcular as vaiáveis de controle 
+
+```{r}
+#| echo: true
+#| include: true
+#| message: false 
+
+(dados <- dados %>% #calculo de x-bar
+  mutate(xbar=rowMeans(dados[2:6])) %>% 
+  mutate(r=apply(dados[,2:6],1,#Amplitude
+                 function(x) max(x)-min(x))) %>% 
+  mutate(LCC=mean(xbar)) %>% 
+  mutate(LCS=LCC+(mean(r)*0.72)) %>% 
+  mutate(LCI=mean(xbar)-(mean(r)*0.72)) %>%
+  mutate(LCCR=mean(r)) %>%
+  mutate(LCSR=LCCR*2.282)%>%
+  mutate(LCIR=LCCR*0))
+  
+  
+```
+
+## Plotando o gráfico de controle
+
+```{r}
+#| echo: true
+#| include: true
+#| message: false 
+(control<-ggplot(dados, aes(Data))+
+   geom_point(aes(y=xbar),colour= "blue")+
+   geom_hline(yintercept=dados$LCC, linetype="dashed", color = "red")+
+   geom_hline(yintercept=dados$LCS, linetype="dashed", color = "green")+
+   geom_hline(yintercept=dados$LCI, linetype="dashed", color = "purple")+
+   labs(title = "Grafico de controle com ggplot e plotly",y="Contagem"))
+```
+```{r}
+#| echo: true
+#| include: true
+#| message: false 
+
+   (gcontrol<-ggplot(dados, aes(Data)) +
+   geom_line(aes(y=xbar,fill="xbar"),colour="blue") +
+   geom_line(aes(y=LCC,fill="LCC"),colour="red")+
+   geom_line(aes(y=LCS,fill="LCS"),colour="green")+
+   geom_line(aes(y=LCI,fill="LCI"),colour="purple")+
+   geom_point(aes(y=xbar))+
+   labs(title = "Grafico de controle com ggplot e plotly",y="Contagem"))
+```
+
+## Usando plotly para criar um grafico interativo
+
+Outro pacote o plotly usa a mesma base do ggplot2 mas permite que os gráficos quando em HTML sejaminterativos.
+
+```{r}
+#| echo: true
+#| include: true
+#| message: false 
+ggplotly(control)
+```
+
+# Usando ggqc
+
+Agora faremos utilizando um pacote criado para o controle de qualidade.
+
+```{r}
+#| echo: true
+#| include: true
+#| message: false 
+
+ggplot(dados, aes(x=Data,y=xbar))+
+  geom_point(color="red")+
+  geom_line(color="green")+
+  stat_QC(method = "XmR", #método
+          auto.label=T,#legendas automaticas
+          label.digits = 2,#quantidade de dígitos das legendas
+          show.1n2.sigma =T #adiciona as linhas do desvio padrão
+          )+
+  scale_x_continuous(expand = expand_scale(mult=.2))+
+  labs(title = "Gráfico de controle com o pacote ggQC", y="Contagem")
+```
+## Grafico de controle usando o pacote qcc Por último faremos esse exercício usando outro pacote, cuja vntagem énão precisar de nada além dos dados, contudo acho o gráfico mais pobre.
+
+```{r}
+#| echo: true
+#| include: true
+#| message: false 
+
+qcc(dados[2:6],type = "xbar")
+```
+
